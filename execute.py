@@ -25,4 +25,18 @@ def execute_command(strategy):
         print(f"[-] Eroare la executarea comenzii: {e}")
 
 
-        #o fucntie care sa execute comanda nmap cu flagurile -Pn si un target datgit 
+        #nmap target -sV -sC -Pn"
+def nmap_scan(target):
+    command = f"nmap {target} -sV -sC -Pn"
+    print(f"[+] Executăm comanda: {command}")
+    try:
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        print("[+] Output-ul comenzii:")
+        print(result.stdout)
+
+        if result.stderr:
+            print("[-] Eroare:")
+            print(result.stderr)
+
+    except Exception as e:
+        print(f"[-] Eroare la executarea comenzii: {e}")
