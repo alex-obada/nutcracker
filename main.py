@@ -1,21 +1,43 @@
-import argparse
+from argparser import parse_arguments
+from ai_engine import decide_initial_command
+import subprocess
+import sys
+
 
 def main():
 
     # dat context la ai
     # inclusiv templateurile cu comenzile tre sa apara aici
+    args = parse_arguments()
     
-    
-    parser = argparse.ArgumentParser(description="Exemplu cu argparse")
-    parser.add_argument("target", help="domain-ul sau ip-ul masinii")
-    parser.add_argument("--learning", help="",) # pentru sfaturi
+
+    target_input = args.target  
+    context = args.context
+    learn = args.learn
 
 
-    args = parser.parse_args()
-    
+    # if not target_input:
+    #     print("[-] Eroare: Target invalid sau nerezolvabil.")
+    #     sys.exit(1)
+
+    # target_ip = resolve_target(target_input)
+    # if not target_ip:
+    #     print("[-] Eroare: Nu am putut rezolva domeniul/target-ul.")
+    #     sys.exit(1)
+
+    # if not is_target_reachable(target_ip):
+    #     print("[-] Target-ul nu este accesibil (ping failed).")
+    #     sys.exit(1)
+
+
     # scanarea initiala cu nmap
     # provocata de ai la care ii dam acces la shell
     
+    command = decide_initial_command(target_input, context, learn)
+    if not command:
+        print("[-] AI-ul nu a returnat o comandă validă.")
+        sys.exit(1)
+
     # bucla de self-promptint si rulare continua pana nu ii zice utilizator sa se opreasca
     
     '''
