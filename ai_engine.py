@@ -103,3 +103,78 @@ Acesta este output-ul brut de la scanarea Nmap:
     except Exception as e:
         print(f"[-] Eroare la analiza rezultatului Nmap: {e}")
         return None
+
+
+def analyze_enumeration_outputs(enumeration_output: str) -> dict | None:
+    """
+    Trimite output-ul combinat de la enumerare către AI și returnează strict un dict JSON.
+    """
+
+    prompt = f"""
+Ești un expert ofensiv în cybersecurity.
+
+Primești output-ul brut rezultat în urma unor comenzi de enumerare (ex: hydra, ssh-audit, nmap, telnet) asupra unui target.
+
+Scopul tău este:
+
+1. Să analizezi TOATE informațiile descoperite.
+2. Dacă detectezi vulnerabilități reale (ex: brute-force posibil, criptografie slabă, servere vechi, porturi interesante), propune metode CONCRETE de exploatare.
+3. Pentru fiecare oportunitate de atac, oferă comenzi practice: hydra, metasploit, searchsploit, ssh-audit, etc.
+4. Dacă nu există exploatare directă, propune metode suplimentare de atac sau investigare.
+
+IMPORTANT:
+- Răspunde STRICT în format JSON valid.
+- Ghilimelele trebuie să fie duble ("), nu simple (').
+- NU adăuga explicații sau texte în afara JSON-ului.
+- Comenzile sugerate trebuie să fie reale, valide și funcționale.
+- Nu mai folosii comenzile ce s-au folosit anterior.
+- Fii concis și direct: doar JSON valid.
+
+Structura JSON dorită:
+
+{{
+  "findings": [
+    {{
+      "vulnerability": "Descriere clară a vulnerabilității",
+      "recommended_exploitation": [
+        "comandă exploit/metasploit sau pași concreți"
+      ],
+      "additional_resources": [
+        "linkuri utile (Hacktricks, Exploit-DB, CVEs)"
+      ]
+    }}
+  ]
+}}
+
+Acesta este output-ul brut combinat:
+
+---
+{enumeration_output}
+---
+
+⚠️ IMPORTANT:
+- Returnează DOAR JSON-ul complet și valid.
+- Nu adăuga alt text înainte sau după JSON.
+- Respectă strict structura cerută.
+"""
+
+    try:
+        # Trimitem promptul către AI
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {"role": "system", "content": "Răspunzi strict în JSON valid."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.0,
+            max_tokens=2000
+        )
+
+        ai_raw_response = response.choices[0].message.content.strip()
+
+        # Parsăm direct răspunsul primit
+        return json.loads(ai_raw_response)
+
+    except Exception as e:
+        print(f"[-] Eroare la analiza outputului de enumerare: {e}")
+        return None

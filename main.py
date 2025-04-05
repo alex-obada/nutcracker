@@ -1,7 +1,7 @@
 from argparser import parse_arguments
 from execute import nmap_scan, extract_enumeration_commands, execute_command
-from ai_engine import analyze_nmap_result
-from reporter import generate_ai_report
+from ai_engine import analyze_nmap_result, analyze_enumeration_outputs
+from reporter import generate_ai_report, display_findings_report
 import os
 
 def main():
@@ -32,7 +32,10 @@ def main():
                     f.write("\n\n")
 
         # Citim toate output-urile combinate
-        
+        with open("EnumerationOutputs/combined_output.txt", "r", encoding="utf-8") as f:
+            all_outputs = f.read()
+        second_json = analyze_enumeration_outputs(all_outputs)
+        display_findings_report(second_json)
         
     
     else:

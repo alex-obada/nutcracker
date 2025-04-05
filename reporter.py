@@ -68,3 +68,38 @@ def generate_ai_report(strategy):
 
     print(f"[+] Raportul Markdown a fost salvat în '{markdown_path}'.")
 
+
+
+def display_findings_report(findings: dict):
+    """
+    Afișează în consolă un raport frumos cu findings AI.
+    """
+    findings_list = findings.get("findings", [])
+
+    print("\n" + "="*60)
+    print("📋 Raport AI: Vulnerabilități și sugestii de exploatare")
+    print("="*60 + "\n")
+
+    if not findings_list:
+        print("⚠️  Nu s-au identificat vulnerabilități exploatabile.\n")
+        return
+
+    for idx, item in enumerate(findings_list, 1):
+        vuln = item.get("vulnerability", "Vulnerabilitate necunoscută")
+        print(f"🔹 {idx}. {vuln}\n")
+
+        recommended = item.get("recommended_exploitation", [])
+        if recommended:
+            print("   ✅ Comenzi de exploatare recomandate:")
+            for cmd in recommended:
+                print(f"     └─ 🛠 {cmd}")
+        
+        resources = item.get("additional_resources", [])
+        if resources:
+            print("\n   🔗 Resurse utile:")
+            for link in resources:
+                print(f"     └─ {link}")
+        
+        print("\n" + "-"*50 + "\n")
+
+    print("✅ Sfârșitul raportului AI.\n")
