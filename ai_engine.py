@@ -16,18 +16,24 @@ def fix_ai_json(raw_text):
     """
     Fixează problemele comune de formatare din răspunsul AI-ului.
     """
-    match = re.search(r'\{.*\}', raw_text, re.DOTALL)
-    if not match:
-        print("[-] Nu s-a găsit bloc JSON în outputul AI-ului.")
+    # Extrage doar blocul JSON complet folosind un alt regex
+    start = raw_text.find("{")
+    end = raw_text.rfind("}")
+    
+    if start == -1 or end == -1:
+        print("[-] Nu s-a găsit bloc JSON complet.")
         return None
 
-    json_text = match.group(0)
+    json_text = raw_text[start:end+1]
 
     # Repară ghilimelele simple (dacă există)
     json_text = json_text.replace("'", '"')
 
     # Repară lipsa de virgulă între obiecte consecutive
     json_text = re.sub(r'"}\s*{', '"}, {', json_text)
+
+    # Repară lipsa de virgulă între elemente din liste (optional, dacă e nevoie)
+    json_text = re.sub(r'"\s*"', '", "', json_text)
 
     return json_text
 
@@ -50,6 +56,11 @@ Scopul tău este:
 IMPORTANT: 
 - Răspunde STRICT în format JSON în structura dată mai jos.
 - Nu adăuga explicații în afara JSON-ului.
+- Unde este IP, inlocuiește cu IP-ul scanat.
+- Din expploitation_paths, adauga comenzi de exploatare sau enumerare care pot fi folosite.
+- Din links, citeste informatiile utile si adauga la recomanded_enumeration comenzi de exploatare sau enumerare care pot fi folosite.
+- Trece fiecare versiune a ficarui serviciu în parte in dreapta serviciului la service: versiune.
+- Sa nu se repete comenzi intre ele.
 
 Structura JSON dorită:
 
@@ -57,7 +68,7 @@ Structura JSON dorită:
   "services": [
     {{
       "port": "22",
-      "service": "ssh",
+      "service": "ssh: 6.6.1p1",
       "exploitation_paths": [
         "Brute force attack on SSH login",
         "Check for known vulnerabilities in OpenSSH 6.6.1p1"
@@ -79,6 +90,9 @@ Acesta este output-ul Nmap brut:
 ---
 {nmap_result}
 ---
+
+Returnează te rog doar JSON-ul, fără explicații sau text în plus.
+
 """
 
     try:

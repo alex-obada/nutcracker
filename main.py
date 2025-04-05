@@ -1,6 +1,7 @@
 from argparser import parse_arguments
 from execute import nmap_scan
 from ai_engine import analyze_nmap_result
+from reporter import generate_ai_report
 
 def main():
     #vreau sa dau paramentru un target
@@ -8,9 +9,11 @@ def main():
     target = args.target       # Aici extragi efectiv argumentul target
     
     nmap_result = nmap_scan(target)
-    ai_response = analyze_nmap_result(nmap_result)
-    print("Analiza AI:")
-    print(ai_response)
-
+    first_json = analyze_nmap_result(nmap_result)
+    if first_json:
+        generate_ai_report(first_json)
+    else:
+        print("[-] Nu s-a putut genera raportul.")
+    
 if __name__ == '__main__':
     main()
