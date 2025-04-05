@@ -111,52 +111,61 @@ def analyze_enumeration_outputs(enumeration_output: str) -> dict | None:
     """
 
     prompt = f"""
-Ești un expert ofensiv în cybersecurity.
+Ești un expert ofensiv în cybersecurity și penetration testing.
 
-Primești output-ul brut rezultat în urma unor comenzi de enumerare (ex: hydra, ssh-audit, nmap, telnet) asupra unui target.
+Primești un output brut rezultat din rularea unor comenzi de enumerare (ex: hydra, ssh-audit, nmap scripts, gobuster, telnet, searchsploit) asupra unui target.
 
 Scopul tău este:
 
-1. Să analizezi TOATE informațiile descoperite.
-2. Dacă detectezi vulnerabilități reale (ex: brute-force posibil, criptografie slabă, servere vechi, porturi interesante), propune metode CONCRETE de exploatare.
-3. Pentru fiecare oportunitate de atac, oferă comenzi practice: hydra, metasploit, searchsploit, ssh-audit, etc.
-4. Dacă nu există exploatare directă, propune metode suplimentare de atac sau investigare.
+1. Analizează toate informațiile primite în output-ul de enumerare.
+2. Identifică vulnerabilitățile reale detectabile din output.
+3. Pentru fiecare vulnerabilitate descoperită, propune comenzi concrete și reale pentru exploatare sau atac.
+4. Comenzile trebuie să fie corecte, funcționale și să poată fi executate direct în terminal (ex: folosind hydra, msfconsole, searchsploit, scripturi de exploit, brute-force SSH etc.).
+5. Dacă există mai multe metode de atac pentru aceeași vulnerabilitate, listează-le.
+6. Oferă și linkuri utile (HackTricks, Exploit-DB, MITRE ATT&CK) dacă există informații relevante.
+7. Nu propune exploaturi care sunt fictive sau foarte improbabile.
 
 IMPORTANT:
-- Răspunde STRICT în format JSON valid.
-- Ghilimelele trebuie să fie duble ("), nu simple (').
-- NU adăuga explicații sau texte în afara JSON-ului.
-- Comenzile sugerate trebuie să fie reale, valide și funcționale.
-- Nu mai folosii comenzile ce s-au folosit anterior.
-- Fii concis și direct: doar JSON valid.
+- Ghilimelele folosite trebuie să fie duble ("), nu simple (').
+- Fără explicații suplimentare sau comentarii în afara JSON-ului.
+- Output-ul final trebuie să fie strict un JSON valid conform structurii de mai jos.
+- Când generezi comenzi de bruteforce sau de directory enumeration, folosește wordlist-uri din `/usr/share/seclists/`, cum ar fi:
+- `/usr/share/seclists/Passwords/rockyou.txt` pentru parole
+- `/usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt` pentru directoare si asa mai departe.
 
-Structura JSON dorită:
+Structură JSON dorită:
 
 {{
-  "findings": [
+  "attacks": [
     {{
       "vulnerability": "Descriere clară a vulnerabilității",
-      "recommended_exploitation": [
-        "comandă exploit/metasploit sau pași concreți"
+      "attack_commands": [
+        "comandă 1 de exploatare",
+        "comandă 2 de exploatare"
       ],
       "additional_resources": [
-        "linkuri utile (Hacktricks, Exploit-DB, CVEs)"
+        "link 1 către documentație sau CVE",
+        "link 2 către exploit relevant"
       ]
     }}
   ]
 }}
 
-Acesta este output-ul brut combinat:
+Acesta este output-ul brut de enumerare:
 
 ---
 {enumeration_output}
 ---
 
 ⚠️ IMPORTANT:
-- Returnează DOAR JSON-ul complet și valid.
-- Nu adăuga alt text înainte sau după JSON.
-- Respectă strict structura cerută.
+- Returnează DOAR JSON-ul cerut.
+- Nu adăuga introduceri, explicații sau alte texte suplimentare înainte sau după JSON.
+- JSON-ul trebuie să înceapă și să se termine strict cu {{ și }}.
+- Când generezi comenzi de bruteforce sau de directory enumeration, folosește wordlist-uri din `/usr/share/seclists/`, cum ar fi:
+- `/usr/share/seclists/Passwords/rockyou.txt` pentru parole
+- `/usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt` pentru directoare si asa mai departe.
 """
+
 
     try:
         # Trimitem promptul către AI

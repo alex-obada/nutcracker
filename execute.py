@@ -13,6 +13,22 @@ def nmap_scan(target):
         print(f"[-] Eroare la executarea comenzii: {e}")
 
 
+def extract_attack_commands(findings_json):
+    """
+    Primește findings-ul JSON (de la AI după enumerare) și extrage toate comenzile de atac.
+    """
+    attack_commands = []
+
+    if not findings_json or "findings" not in findings_json:
+        return []
+
+    for finding in findings_json["findings"]:
+        cmds = finding.get("attack_commands", [])
+        if isinstance(cmds, list):
+            attack_commands.extend(cmds)
+
+    return attack_commands
+
 def extract_enumeration_commands(strategy, target):
     """
     Extrage comenzile de enumerare recomandate din output-ul AI și înlocuiește placeholder-ul IP.
@@ -35,48 +51,54 @@ def extract_enumeration_commands(strategy, target):
     return commands
 
 
-def check_and_install_tool(tool):
-    """
-    Verifică dacă un tool există. Dacă nu există, încearcă să îl instaleze automat cu apt.
-    """
-    if shutil.which(tool) is not None:
-        return True  # Tool-ul există deja
+def is_tool_installed(tool_name):
+    return shutil.which(tool_name) is not None
 
-    print(f"[!] Tool-ul '{tool}' nu este instalat. Încerc să îl instalez automat...")
-
+def install_tool(tool_name):
     try:
-        subprocess.run(f"sudo apt-get update && sudo apt-get install -y {tool}", shell=True, check=True)
-        if shutil.which(tool) is not None:
-            print(f"[+] Tool-ul '{tool}' a fost instalat cu succes.")
-            return True
-        else:
-            print(f"[-] Nu am reușit să instalez tool-ul '{tool}'. Comanda va fi sărită.")
-            return False
+        subprocess.run(["sudo", "apt", "install", "-y", tool_name], check=True)
+        return is_tool_installed(tool_name)
     except Exception as e:
-        print(f"[-] Eroare la instalarea tool-ului '{tool}': {e}")
+        print(f"[-] Eroare la instalarea tool-ului {tool_name}: {e}")
         return False
 
-def execute_command(cmd, timeout=300):
-    """
-    Execută o comandă shell după ce verifică dacă tool-ul principal există.
-    Dacă tool-ul lipsește și nu poate fi instalat, sarim comanda.
-    """
+def execute_command(command, allow_install=False):
     try:
-        # Extragem primul cuvânt din comandă (ex: "hydra", "gobuster")
-        tool = cmd.split()[0]
+        result = subprocess.run(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=300
+        )
+        return result.stdout + "\n" + result.stderr
 
-        # Verificăm și instalăm dacă lipsește
-        if not check_and_install_tool(tool):
-            print(f"[!] Sărim comanda pentru că tool-ul '{tool}' lipsește.")
-            return ""
+    except FileNotFoundError:
+        if allow_install:
+            tool_name = command.split()[0]  # Extrage tool-ul din comandă (ex: "hydra")
+            print(f"[!] Tool-ul {tool_name} nu este instalat. Încercăm să îl instalăm...")
 
-        # Executăm comanda normal
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
-        return result.stdout
+            if install_tool(tool_name):
+                print(f"[+] Tool-ul {tool_name} a fost instalat cu succes. Reîncercăm comanda...")
+                try:
+                    result = subprocess.run(
+                        command,
+                        shell=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                        timeout=300
+                    )
+                    return result.stdout + "\n" + result.stderr
+                except Exception as e2:
+                    return f"[-] Eroare după instalare: {e2}"
+            else:
+                return f"[-] Nu s-a putut instala tool-ul {tool_name}."
+        else:
+            return "[-] Comanda nu a fost găsită și instalarea automată este dezactivată."
 
     except subprocess.TimeoutExpired:
-        print(f"[-] Comanda a fost oprită după {timeout} secunde: {cmd}")
-        return ""
+        return "[-] Timeout atins pentru această comandă."
     except Exception as e:
-        print(f"[-] Eroare la executarea comenzii {cmd}: {e}")
-        return ""
+        return f"[-] Eroare la rularea comenzii: {e}"
