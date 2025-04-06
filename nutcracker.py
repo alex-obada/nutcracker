@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparser
 import execute
 import ai_engine

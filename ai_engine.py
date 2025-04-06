@@ -3,6 +3,7 @@
 from openai import OpenAI
 import json
 import os
+import sys
 from dotenv import load_dotenv
 
 # Încarcă cheia OpenAI
@@ -95,7 +96,11 @@ Acesta este output-ul brut de la scanarea Nmap:
             max_tokens=1500
         )
 
-        ai_raw_response = response.choices[0].message.content.strip()
+        ai_raw_response = response.choices[0].message.content
+        if ai_raw_response is None:
+            print("[!] Eroare: Content-ul primit de la AI este None. Ieșim din aplicație...")
+            sys.exit(1)
+            
 
         # Parsăm direct JSON-ul primit
         return json.loads(ai_raw_response)
@@ -179,7 +184,12 @@ Acesta este output-ul brut de enumerare:
             max_tokens=2000
         )
 
-        ai_raw_response = response.choices[0].message.content.strip()
+        ai_raw_response = response.choices[0].message.content
+        if ai_raw_response is None:
+            print("[!] Eroare: Content-ul primit de la AI este None. Ieșim din aplicație...")
+            sys.exit(1)
+            
+        ai_raw_response = ai_raw_response.strip()
 
         # Parsăm direct răspunsul primit
         return json.loads(ai_raw_response)
