@@ -14,9 +14,9 @@ $$/   $$/  $$$$$$/     $$$$/   $$$$$$$/ $$/       $$$$$$$/  $$$$$$$/ $$/   $$/  
 ## 📝 Descriere
 
 Nutcracker primește un target (ip/domain) și îi analizează porturile deschise folosind `nmap`. Ca următor pas, tot ce a rezultat din scanare este redirecționat în `gpt-4-turbo`, iar acesta construiește un raport mai detaliat cu ce s-ar putea face pentru a exploata orice vulnerabilități care ar exista pe respectivul calculator. Această operație se realizează de două ori pentru ca AI-ul să-și mărească contextul cu informații de pe surse reputabile, cum ar fi:
-- https://www.hackingarticles.in/penetration-testing/
-- https://book.hacktricks.wiki/en/index.html
-- https://attack.mitre.org/
+- [HackingArticles](https://www.hackingarticles.in/penetration-testing/)
+- [HackTricks](https://book.hacktricks.wiki/en/index.html)
+- [MITRE ATT&CK](https://attack.mitre.org/)
 
 Prin această iterare, AI-ul va genera și comenzi de terminal care vor fi folosite pentru a ataca victima în cazul în care aceste vulnerabilități există. Tot procesul va produce loguri la ambele etape de generare a rapoartelor și la rularea comenzilor de atac (din nou, dacă este cazul).
 
