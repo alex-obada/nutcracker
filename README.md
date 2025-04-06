@@ -17,6 +17,9 @@ Nutcracker primește un target (ip/domain) și îi analizează porturile deschis
   - [HackingArticles](https://www.hackingarticles.in/penetration-testing/)
   - [HackTricks](https://book.hacktricks.wiki/en/index.html)
   - [MITRE ATT&CK](https://attack.mitre.org/)
+- [HackingArticles](https://www.hackingarticles.in/penetration-testing/)
+- [HackTricks](https://book.hacktricks.wiki/en/index.html)
+- [MITRE ATT&CK](https://attack.mitre.org/)
 
 Prin această iterare, AI-ul va genera și comenzi de terminal care vor fi folosite pentru a ataca victima în cazul în care aceste vulnerabilități există. Tot procesul va produce loguri la ambele etape de generare a rapoartelor și la rularea comenzilor de atac (din nou, dacă este cazul).
 
