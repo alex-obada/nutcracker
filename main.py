@@ -1,68 +1,86 @@
-import os
 import argparser
 import execute
 import ai_engine
 import reporter
+import os
+import time
 
 def main():
+    banner = r"""
+  _   _       _                      _             
+ | \ | |     | |                    | |            
+ |  \| |_   _| |_ ___ _ __ __ _  ___| | _____ _ __ 
+ | . ` | | | | __/ __| '__/ _` |/ __| |/ / _ \ '__|
+ | |\  | |_| | || (__| | | (_| | (__|   <  __/ |   
+ |_| \_|\__,_|\__\___|_|  \__,_|\___|_|\_\___|_|   
+                                                  
+                                                  
+    """
+    print(banner)
+    print("⚠️  WARNING: This tool is for educational purposes only. Use responsibly and ethically.\n")
+   
+    time.sleep(4)
+
+    # 1. Parsăm argumentele
     args = argparser.parse_arguments()
     target = args.target
 
-    # Pasul 1: Scanare Nmap
-    nmap_result = execute.nmap_scan(target)
-    first_json = ai_engine.analyze_nmap_result(nmap_result)
+    # 2. Scanăm cu Nmap
+    nmap_output = execute.nmap_scan(target)
 
-    if first_json:
-        reporter.generate_ai_report(first_json)
+    # 3. Analizăm rezultatul cu AI
+    strategy = ai_engine.analyze_nmap_result(nmap_output)
+    if not strategy:
+        print("[-] Eroare: nu s-a putut analiza scanarea Nmap.")
+        return
 
-        # Pasul 2: Extragem comenzile de recon
-        recon_commands = execute.extract_enumeration_commands(first_json, target)
+    # 4. Generăm raport AI pentru Recon
+    reporter.generate_ai_report(strategy)
 
-        # Creăm folder pentru output-urile de enumerare
-        os.makedirs("EnumerationOutputs", exist_ok=True)
-        output_file_path = os.path.join("EnumerationOutputs", "combined_output.txt")
+    # 5. Extragem comenzile de recon
+    recon_commands = execute.extract_enumeration_commands(strategy, target)
 
-        # Executăm comenzile de recon și salvăm output-ul
-        with open(output_file_path, "w", encoding="utf-8") as f:
-            for idx, cmd in enumerate(recon_commands, 1):
-                print(f"[+] Executăm comanda de recon {idx}: {cmd}")
-                output = execute.execute_command(cmd, allow_install=True)
-                if output:
-                    f.write(f"==================== Comanda {idx}: {cmd} ====================\n")
-                    f.write(output)
-                    f.write("\n\n")
+    # 6. Executăm comenzile de recon și salvăm output-urile
+    os.makedirs("EnumerationOutputs", exist_ok=True)
+    enumeration_output_file = "EnumerationOutputs/combined_output.txt"
 
-        # Pasul 3: Analizăm output-ul de enumerare
-        with open(output_file_path, "r", encoding="utf-8") as f:
-            all_outputs = f.read()
-        
-        second_json = ai_engine.analyze_enumeration_outputs(all_outputs)
-        if second_json:
-            reporter.display_findings_report(second_json)
+    with open(enumeration_output_file, "w", encoding="utf-8") as f:
+        for idx, cmd in enumerate(recon_commands, 1):
+            print(f"[+] Executăm comanda de recon {idx}: {cmd}")
+            output = execute.execute_command(cmd, allow_install=True)
+            f.write(f"==================== Comanda {idx}: {cmd} ====================\n")
+            f.write(output + "\n\n")
 
-            # Pasul 4: Extragem comenzi de atac
-            attack_commands = execute.extract_attack_commands(second_json)
-            print(second_json)
-            if attack_commands:
-                os.makedirs("Reports/Attack", exist_ok=True)
+    # 7. Analizăm rezultatul recon-ului cu AI
+    with open(enumeration_output_file, "r", encoding="utf-8") as f:
+        combined_output = f.read()
 
-                for idx, cmd in enumerate(attack_commands, 1):
-                    print(f"[+] Executăm comanda de atac {idx}: {cmd}")
-                    output = execute.execute_command(cmd, allow_install=False)
+    findings = ai_engine.analyze_enumeration_outputs(combined_output)
 
-                    # Salvăm fiecare output într-un fișier separat
-                    attack_output_file = f"Reports/Attack/attack_{idx}.txt"
-                    with open(attack_output_file, "w", encoding="utf-8") as f:
-                        f.write(f"Comandă executată: {cmd}\n\n")
-                        f.write(output)
+    if not findings:
+        print("[-] Nu s-au identificat vulnerabilități suplimentare.")
+        return
 
-                    print(f"[+] Output salvat în {attack_output_file}")
-            else:
-                print("[-] Nu au fost generate comenzi de atac suplimentare.")
-        else:
-            print("[-] Nu s-au putut analiza output-urile de enumerare.")
-    else:
-        print("[-] Nu s-a putut genera raportul inițial.")
+    # 8. Generăm raport AI pentru findings
+    reporter.display_findings_report(findings)
 
-if __name__ == '__main__':
+    
+    reporter.generate_final_markdown_report(strategy, findings)
+
+
+
+    message = """
+\033[92m
+╔════════════════════════════════════════════════════════════════════════════════════╗
+║  Dacă aveți nevoie de ajutor suplimentar în soluționarea problemelor dumneavoastră ║
+║  echipa Nutcracker vă recomandă să îi contactați pe experții de la Zerotak.        ║
+║                                                                                    ║
+║  📧 Email de contact: collaboration@zerotak.com                                    ║
+╚════════════════════════════════════════════════════════════════════════════════════╝
+\033[0m
+"""
+    print(message)
+
+
+if __name__ == "__main__":
     main()

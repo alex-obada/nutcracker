@@ -3,7 +3,7 @@ import shutil
 
 #nmap target -sV -sC -Pn"
 def nmap_scan(target):
-    command = f"nmap {target} -sV -sC -Pn"
+    command = f"nmap {target} -sV -sC -Pn -p 1-100"
     print(f"[+] Executăm comanda: {command}")
     try:
         result = subprocess.run(command, shell=True, capture_output=True, text=True)
@@ -13,19 +13,15 @@ def nmap_scan(target):
         print(f"[-] Eroare la executarea comenzii: {e}")
 
 
-def extract_attack_commands(findings_json):
+def extract_attack_commands(findings: dict) -> list:
     """
-    Primește findings-ul JSON (de la AI după enumerare) și extrage toate comenzile de atac.
+    Primește findings (dict) și extrage toate comenzile de atac din findings["attacks"].
     """
     attack_commands = []
 
-    if not findings_json or "findings" not in findings_json:
-        return []
-
-    for finding in findings_json["findings"]:
-        cmds = finding.get("attack_commands", [])
-        if isinstance(cmds, list):
-            attack_commands.extend(cmds)
+    if "attacks" in findings:
+        for vuln in findings["attacks"]:
+            attack_commands.extend(vuln.get("attack_commands", []))
 
     return attack_commands
 

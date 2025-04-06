@@ -138,7 +138,7 @@ Structură JSON dorită:
 {{
   "attacks": [
     {{
-      "vulnerability": "Descriere clară a vulnerabilității",
+      "vulnerability": "Descriere clară a vulnerabilității foarte detaliată",
       "attack_commands": [
         "comandă 1 de exploatare",
         "comandă 2 de exploatare"
