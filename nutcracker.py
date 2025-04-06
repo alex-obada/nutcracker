@@ -66,6 +66,8 @@ def main():
     reporter.display_findings_report(findings)
 
     reporter.generate_final_markdown_report(strategy, findings)
+    reporter.convert_markdown_to_html("Reports/final_report.md")
+
 
     message = """
 \033[92m

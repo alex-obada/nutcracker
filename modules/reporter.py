@@ -105,49 +105,51 @@ def display_findings_report(findings: dict):
 
 def generate_final_markdown_report(nmap_json: dict, findings_json: dict, output_file: str = "Reports/final_report.md"):
     """
-    Generează un raport final Markdown cu toate informațiile:
+    Generează un raport final Markdown cu:
     - Rezultatul scanării Nmap și analiza inițială
-    - Vulnerabilități suplimentare detectate după recon
-    - Mesaj de contact Zerotak
+    - Vulnerabilități suplimentare identificate după recon
+    - Mesaj final de suport Nutcracker
     """
+    import os
+
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     with open(output_file, "w", encoding="utf-8") as f:
         f.write("# 📄 Raport Final de Analiză Nutcracker\n\n")
 
-        # Secțiunea Nmap + analiza inițială
+        # Secțiunea Nmap
         f.write("## 🔍 Rezultatele scanării Nmap și analiza inițială\n\n")
 
         services = nmap_json.get("services", [])
         for service in services:
             port = service.get("port", "N/A")
-            service_name = service.get("service", "Unknown")
+            service_name = service.get("service", "Unknown Service")
             exploitation_paths = service.get("exploitation_paths", [])
             links = service.get("links", [])
             enumeration_cmds = service.get("recommended_enumeration", [])
 
             f.write(f"<details>\n<summary>🚪 Port {port} - {service_name}</summary>\n\n")
-            
-            f.write("**Path-uri de Exploatare:**\n")
+
+            f.write("**🔎 Path-uri de Exploatare:**\n\n")
             for path in exploitation_paths:
                 f.write(f"- {path}\n")
             f.write("\n")
 
             if links:
-                f.write("**Link-uri Utile:**\n")
+                f.write("**🔗 Link-uri Utile:**\n\n")
                 for link in links:
                     f.write(f"- [{link}]({link})\n")
                 f.write("\n")
 
             if enumeration_cmds:
-                f.write("**Comenzi Recomandate:**\n")
+                f.write("**🛠️ Comenzi Recomandate:**\n\n")
                 for cmd in enumeration_cmds:
                     f.write(f"- `{cmd}`\n")
                 f.write("\n")
 
             f.write("</details>\n\n---\n\n")
 
-        # Secțiunea Findings suplimentare
+        # Secțiunea Vulnerabilități suplimentare
         f.write("## 🛡️ Vulnerabilități suplimentare identificate după Recon\n\n")
 
         attacks = findings_json.get("attacks", [])
@@ -160,13 +162,13 @@ def generate_final_markdown_report(nmap_json: dict, findings_json: dict, output_
                 f.write(f"<details>\n<summary>🔹 {vuln}</summary>\n\n")
 
                 if attack_cmds:
-                    f.write("**Comenzi de Atac Recomandate:**\n")
+                    f.write("**🛠️ Comenzi de Atac Recomandate:**\n\n")
                     for cmd in attack_cmds:
                         f.write(f"- `{cmd}`\n")
                     f.write("\n")
 
                 if resources:
-                    f.write("**Link-uri Suplimentare:**\n")
+                    f.write("**🔗 Link-uri Suplimentare:**\n\n")
                     for link in resources:
                         f.write(f"- [{link}]({link})\n")
                     f.write("\n")
@@ -175,7 +177,7 @@ def generate_final_markdown_report(nmap_json: dict, findings_json: dict, output_
         else:
             f.write("⚠️  Nu s-au identificat vulnerabilități suplimentare.\n\n")
 
-        # Secțiunea Finală - Mesajul Nutcracker & Zerotak
+        # Mesajul final Nutcracker
         final_message = """
 ---
 
@@ -189,3 +191,74 @@ echipa **Nutcracker** vă recomandă să îi contactați pe experții de la **Ze
 ---
 """
         f.write(final_message)
+
+def convert_markdown_to_html(markdown_file: str, html_output_file: str = "Reports/final_report.html"):
+    """
+    Convertește fișierul Markdown într-un fișier HTML dark mode simplu.
+    """
+    import markdown2
+    import os
+
+    # Verificăm dacă există fișierul Markdown
+    if not os.path.isfile(markdown_file):
+        print(f"[-] Fișierul Markdown {markdown_file} nu există!")
+        return
+
+    with open(markdown_file, "r", encoding="utf-8") as f:
+        md_content = f.read()
+
+    # Convertim conținutul Markdown în HTML
+    html_content = markdown2.markdown(md_content, extras=["fenced-code-blocks", "code-friendly", "tables", "cuddled-lists", "metadata"])
+    # Împachetăm într-un template HTML basic cu Dark Mode
+    full_html = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Raport Final Nutcracker</title>
+    <style>
+        body {{
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }}
+        a {{
+            color: #80cbc4;
+        }}
+        code {{
+            background-color: #1e1e1e;
+            padding: 2px 4px;
+            border-radius: 5px;
+        }}
+        pre {{
+            background-color: #1e1e1e;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }}
+        details {{
+            background-color: #1e1e1e;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }}
+        summary {{
+            font-weight: bold;
+            cursor: pointer;
+        }}
+    </style>
+</head>
+<body>
+{html_content}
+</body>
+</html>
+"""
+
+    # Salvăm fișierul HTML
+    os.makedirs(os.path.dirname(html_output_file), exist_ok=True)
+    with open(html_output_file, "w", encoding="utf-8") as f:
+        f.write(full_html)
+
+    print(f"[+] Raport HTML generat: {html_output_file}")
+
