@@ -1,5 +1,3 @@
-# reporter.py
-
 import os
 
 def generate_ai_report(strategy):

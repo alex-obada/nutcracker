@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-import argparser
-import execute
-import ai_engine
-import reporter
+import modules.argparser as argparser
+import modules.execute as execute
+import modules.ai_engine as ai_engine
+import modules.reporter as reporter
 import os
 import time
 
@@ -65,10 +65,7 @@ def main():
     # 8. Generăm raport AI pentru findings
     reporter.display_findings_report(findings)
 
-    
     reporter.generate_final_markdown_report(strategy, findings)
-
-
 
     message = """
 \033[92m

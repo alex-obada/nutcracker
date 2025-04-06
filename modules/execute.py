@@ -1,7 +1,7 @@
 import subprocess
 import shutil
 
-#nmap target -sV -sC -Pn"
+#nmap target -sV -sC -Pn -p 1-100"
 def nmap_scan(target):
     command = f"nmap {target} -sV -sC -Pn -p 1-100"
     print(f"[+] Executăm comanda: {command}")
